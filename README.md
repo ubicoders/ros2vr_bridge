@@ -37,7 +37,7 @@ Click "Connect" Button
 # 5. Publish sample pwm
 
 ```
-ros2 topic pub /vr_mr_pwm vrobots_msgs/VRobotActuator "pwm: [1500, 1500, 1500, 1600]"
+ros2 topic pub /vr_mr_pwm vrobots_msgs/VRobotActuator "pwm: [1500, 1500, 1500, 1510]"
 ```
 
 # 6. Observe the simulation
