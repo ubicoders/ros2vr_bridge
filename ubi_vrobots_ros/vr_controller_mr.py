@@ -6,17 +6,42 @@ import numpy as np
 
 class Multirotor:
     def __init__(self):
-        pass
+        self.h_err_int = 0
 
 
     def my_controller(self, eul, angvel, pos, vel):
         print(pos)
-        print(vel)
+        att_set_point = np.array([0, 0, 0])
         
-        # Implement your controller here
+        h_est = -pos.z
+        h_dot = -vel.z
+        h_sp = 2
+        h_kp = 20
+        h_kd = 15
+        h_ki = 0.1
+        h_err = h_sp - h_est
+        self.h_err_int += h_err
+        if (self.h_err_int > 100):
+            self.h_err_int = 100
+        
+        throttle = 1200 + h_kp * h_err - h_kd * h_dot + h_ki*self.h_err_int
 
+        # attitude controller
+        att_kp = np.array([1, 1, 0])
+        att_kd = np.array([10, 10, 0])
 
-        return 1220, 1220, 1220, 1225
+        eul_est = np.array([eul.x, eul.y, eul.z])
+        # print(gt.states)
+        angvel_est = np.array([angvel.x, angvel.y, angvel.z]) # rad/s
+        att_err = att_set_point - eul_est
+        
+        output = att_kp * att_err - att_kd * angvel_est
+
+        m0 = throttle + output[0] + output[1]
+        m1 = throttle - output[0] + output[1]
+        m2 = throttle - output[0] - output[1]
+        m3 = throttle + output[0] - output[1]
+        return int(m0), int(m1), int(m2), int(m3)
         
 
 class VirtualRobotsPubSub(Node):
