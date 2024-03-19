@@ -94,9 +94,10 @@ class VirtualRobotsPubSub(Node):
     def subscribe_vr_actuator(self, msg):
         pwm = msg.pwm
         force = msg.force
-        # self.get_logger().info(f"pwm: {pwm}")
-        self.vrobot.set_pwm(m0=pwm[0], m1=pwm[1], m2=pwm[2], m3=pwm[3])
-        self.vrobot.set_force(force)
+        if (pwm is not None and len(pwm) >= 4):
+            self.vrobot.set_pwm(m0=pwm[0], m1=pwm[1], m2=pwm[2], m3=pwm[3])
+        if (force is not None):
+            self.vrobot.set_force(force)
         self.force_reset_timer.reset()
         
 
