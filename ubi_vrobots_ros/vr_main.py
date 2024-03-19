@@ -23,7 +23,7 @@ class UbicodersMain:
 
 class VirtualRobotsPubSub(Node):
     def __init__(self):
-        super().__init__('ubi_vrobots_publisher')
+        super().__init__('ubi_vrobots_ros')
         qos_profile = QoSProfile(depth=10)
         self.vrobots_states_pub = self.create_publisher(VRobotStates, 'vrobots_states', qos_profile)
         self.timer = self.create_timer(0.02, self.publish_vr_states)
@@ -99,8 +99,6 @@ class VirtualRobotsPubSub(Node):
         if (force is not None):
             self.vrobot.set_force(force)
         self.force_reset_timer.reset()
-        
-
 
 def main(args=None):
     rclpy.init(args=args)

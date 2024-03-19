@@ -8,7 +8,7 @@ def generate_launch_description():
     package_dir = FindPackageShare('ubi_vrobots_ros').find('ubi_vrobots_ros')
 
     # Path to your Python script relative to the package root
-    python_script_path = os.path.join(package_dir, 'vr_bridge.py')
+    python_script_path = os.path.join(package_dir, 'vr_main.py')
 
     return LaunchDescription([
         ExecuteProcess(
@@ -17,8 +17,14 @@ def generate_launch_description():
         ),
         Node(
             package='ubi_vrobots_ros', 
-            executable='mr', 
-            name='multirotor_pubsub',  
+            executable='vr_main', 
+            name='ubi_vrobots_ros',  
             output='screen',             
         ),
+        # Node(
+        #     package='ubi_vrobots_ros', 
+        #     executable='vr_ctrl_mr', 
+        #     name='vr_mr',  
+        #     output='screen',             
+        # ),
     ])

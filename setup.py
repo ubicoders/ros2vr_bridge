@@ -13,8 +13,7 @@ setup(
     data_files=[
         ('share/ament_index/resource_index/packages', ['resource/' + package_name]),
         #=============
-        # ('share/' + package_name, glob.glob(os.path.join('launch', '*.launch.py'))),
-        # ('share/' + package_name, glob.glob(os.path.join('ubi_vrobots_ros', 'vr_bridge.py'))),
+        ('share/' + package_name, glob.glob(os.path.join('launch', '*.launch.py'))),
         #=============
         ('share/' + package_name, ['package.xml']),
     ],
@@ -27,8 +26,8 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            # "bridge = vrobots_mr.vr_bridge:main",
-            "vr_main = ubi_vrobots_ros.vr_main:main"
+            "vr_main = ubi_vrobots_ros.vr_main:main",
+            "vr_ctrl_mr = ubi_vrobots_ros.vr_controller_mr:main",
         ],
     },
 )
