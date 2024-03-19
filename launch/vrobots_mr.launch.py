@@ -5,7 +5,7 @@ from launch_ros.substitutions import FindPackageShare
 import os
 
 def generate_launch_description():
-    package_dir = FindPackageShare('vrobots_mr').find('vrobots_mr')
+    package_dir = FindPackageShare('ubi_vrobots_ros').find('ubi_vrobots_ros')
 
     # Path to your Python script relative to the package root
     python_script_path = os.path.join(package_dir, 'vr_bridge.py')
@@ -16,7 +16,7 @@ def generate_launch_description():
             shell=True
         ),
         Node(
-            package='vrobots_mr', 
+            package='ubi_vrobots_ros', 
             executable='mr', 
             name='multirotor_pubsub',  
             output='screen',             

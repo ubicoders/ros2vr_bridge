@@ -4,7 +4,7 @@ import glob
 import os
 #=============
 
-package_name = 'vrobots_mr'
+package_name = 'ubi_vrobots_ros'
 
 setup(
     name=package_name,
@@ -13,8 +13,8 @@ setup(
     data_files=[
         ('share/ament_index/resource_index/packages', ['resource/' + package_name]),
         #=============
-        ('share/' + package_name, glob.glob(os.path.join('launch', '*.launch.py'))),
-        ('share/' + package_name, glob.glob(os.path.join('vrobots_mr', 'vr_bridge.py'))),
+        # ('share/' + package_name, glob.glob(os.path.join('launch', '*.launch.py'))),
+        # ('share/' + package_name, glob.glob(os.path.join('ubi_vrobots_ros', 'vr_bridge.py'))),
         #=============
         ('share/' + package_name, ['package.xml']),
     ],
@@ -28,7 +28,7 @@ setup(
     entry_points={
         'console_scripts': [
             # "bridge = vrobots_mr.vr_bridge:main",
-            "mr = vrobots_mr.vr_mr:main"
+            "vr_main = ubi_vrobots_ros.vr_main:main"
         ],
     },
 )
