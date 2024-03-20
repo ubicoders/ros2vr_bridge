@@ -32,14 +32,9 @@ class VirtualRobotsPubSub(Node):
         angvel = msg.angvel
         pos = msg.pos
         vel = msg.linvel
-
-        # print(eul)
-        # print(angvel)
-
         m0, m1, m2, m3 = self.mr.my_controller(eul, angvel, pos, vel)
         out_msg = VRobotActuator()
         out_msg.pwm = [m0, m1, m2, m3]
-        print(out_msg)
         self.vr_act_pub.publish(out_msg)
 
 def main(args=None):
