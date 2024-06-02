@@ -1,8 +1,9 @@
 import rclpy
 from rclpy.node import Node
 from rclpy.qos import QoSProfile
-from ubi_vrobots_msgs.msg import VRobotActuator, VRobotStates
-from ubicoders_vrobots import System, GeneralRobot
+from ubi_vrobots_interface.msg import VRobotActuator, VRobotStates
+from ubicoders_vrobots import System, VirtualRobot
+from ubicoders_vrobots.vrobots_clients.msg_helper import VRobotState
 import threading  # Import threading module
 from rclpy.timer import Timer
 
@@ -15,11 +16,21 @@ class UbicodersMain:
         pass
 
     def loop(self):
-        #print(self.mr.states)
+        print(self.mr.states)
         # # Example of setting PWM values
         #self.mr.set_pwm(m0=1500, m1=1500, m2=1500, m3=1500)
-        pass
+        #pass
 
+class GeneralRobot(VirtualRobot):
+    def __init__(self) -> None:
+        super().__init__()
+        self.states: VRobotState = VRobotState(None)
+
+    def pack(self) -> [bytes]:
+        return []
+
+    def pack_setup(self) -> [bytes]:
+        return []
 
 class VirtualRobotsPubSub(Node):
     def __init__(self):
@@ -40,8 +51,9 @@ class VirtualRobotsPubSub(Node):
         self.system_thread.start()
 
     def reset_force(self):
-        self.vrobot.set_pwm(m0=900, m1=900, m2=900, m3=900)
-        self.vrobot.set_force(0.0)
+        # self.vrobot.set_pwm(m0=900, m1=900, m2=900, m3=900)
+        # self.vrobot.set_force(0.0)
+        pass
 
     def publish_vr_states(self):
         acc = self.vrobot.states.accelerometer
@@ -51,22 +63,38 @@ class VirtualRobotsPubSub(Node):
         angvel = self.vrobot.states.ang_vel
         pos = self.vrobot.states.lin_pos
         linvel = self.vrobot.states.lin_vel
+        angacc = self.vrobot.states.ang_acc
+        euler_dot = self.vrobot.states.euler_dot
+        quaternion = self.vrobot.states.quaternion
+        force = self.vrobot.states.force
+        torque = self.vrobot.states.torque
+        pwm = self.vrobot.states.pwm
+        actuators = self.vrobot.states.actuators
+
         msg = VRobotStates()
+
+        # Populate basic fields
+        if (self.vrobot.states.timestamp is not None):
+            # print(type(self.vrobot.states.timestamp))
+            msg.timestamp = float(self.vrobot.states.timestamp)
+            msg.name = self.vrobot.states.name
         
+
+        # Populate vector fields
         if acc is not None:
-            msg.acc.x = float(acc.x)
-            msg.acc.y = float(acc.y)
-            msg.acc.z = float(acc.z)
+            msg.accelerometer.x = float(acc.x)
+            msg.accelerometer.y = float(acc.y)
+            msg.accelerometer.z = float(acc.z)
 
         if gyro is not None:
-            msg.gyro.x = float(gyro.x)
-            msg.gyro.y = float(gyro.y)
-            msg.gyro.z = float(gyro.z)
+            msg.gyroscope.x = float(gyro.x)
+            msg.gyroscope.y = float(gyro.y)
+            msg.gyroscope.z = float(gyro.z)
 
         if mag is not None:
-            msg.mag.x = float(mag.x)
-            msg.mag.y = float(mag.y)
-            msg.mag.z = float(mag.z)
+            msg.magnetometer.x = float(mag.x)
+            msg.magnetometer.y = float(mag.y)
+            msg.magnetometer.z = float(mag.z)
 
         if euler is not None:
             msg.euler.x = float(euler.x)
@@ -74,22 +102,55 @@ class VirtualRobotsPubSub(Node):
             msg.euler.z = float(euler.z)
 
         if angvel is not None:
-            msg.angvel.x = float(angvel.x)
-            msg.angvel.y = float(angvel.y)
-            msg.angvel.z = float(angvel.z)
+            msg.ang_vel.x = float(angvel.x)
+            msg.ang_vel.y = float(angvel.y)
+            msg.ang_vel.z = float(angvel.z)
 
         if pos is not None:
-            msg.pos.x = float(pos.x)
-            msg.pos.y = float(pos.y)
-            msg.pos.z = float(pos.z)
+            msg.lin_pos.x = float(pos.x)
+            msg.lin_pos.y = float(pos.y)
+            msg.lin_pos.z = float(pos.z)
 
         if linvel is not None:
-            msg.linvel.x = float(linvel.x)
-            msg.linvel.y = float(linvel.y)
-            msg.linvel.z = float(linvel.z)
-        
+            msg.lin_vel.x = float(linvel.x)
+            msg.lin_vel.y = float(linvel.y)
+            msg.lin_vel.z = float(linvel.z)
+
+        if angacc is not None:
+            msg.ang_acc.x = float(angacc.x)
+            msg.ang_acc.y = float(angacc.y)
+            msg.ang_acc.z = float(angacc.z)
+
+        if euler_dot is not None:
+            msg.euler_dot.x = float(euler_dot.x)
+            msg.euler_dot.y = float(euler_dot.y)
+            msg.euler_dot.z = float(euler_dot.z)
+
+        if quaternion is not None:
+            msg.quaternion.x = float(quaternion.x)
+            msg.quaternion.y = float(quaternion.y)
+            msg.quaternion.z = float(quaternion.z)
+            msg.quaternion.w = float(quaternion.w)
+
+        if force is not None:
+            msg.force.x = float(force.x)
+            msg.force.y = float(force.y)
+            msg.force.z = float(force.z)
+
+        if torque is not None:
+            msg.torque.x = float(torque.x)
+            msg.torque.y = float(torque.y)
+            msg.torque.z = float(torque.z)
+
+        if pwm is not None:
+            msg.pwm = pwm  # Assuming pwm is a list of uint32 values
+
+        if actuators is not None:
+            msg.actuators = actuators  # Assuming actuators is a list of float values
+
+        # Publish the message
         self.vrobots_states_pub.publish(msg)
-        self.get_logger().info("published /vrobots_states")
+
     
     def subscribe_vr_actuator(self, msg):
         pwm = msg.pwm

@@ -17,7 +17,7 @@ setup(
         #=============
         ('share/' + package_name, ['package.xml']),
     ],
-    install_requires=['setuptools'],
+    install_requires=['setuptools', 'ubicoders-vrobots'],
     zip_safe=True,
     maintainer='root',
     maintainer_email='root@todo.todo',
@@ -28,6 +28,7 @@ setup(
         'console_scripts': [
             "vr_main = ubi_vrobots_ros.vr_main:main",
             "vr_ctrl_mr = ubi_vrobots_ros.vr_controller_mr:main",
+            "vr_bridge = ubi_vrobots_ros.vr_bridge:main",
         ],
     },
 )

@@ -1,7 +1,7 @@
 import rclpy
 from rclpy.node import Node
 from rclpy.qos import QoSProfile
-from ubi_vrobots_msgs.msg import VRobotActuator, VRobotStates
+from ubi_vrobots_interface.msg import VRobotActuator, VRobotStates
 import numpy as np
 
 class Multirotor:
