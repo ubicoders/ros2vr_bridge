@@ -12,9 +12,9 @@ setup(
     packages=[package_name],
     data_files=[
         ('share/ament_index/resource_index/packages', ['resource/' + package_name]),
-        #=============
-        ('share/' + package_name, glob.glob(os.path.join('launch', '*.launch.py'))),
-        #=============
+        # #=============
+        # ('share/' + package_name, glob.glob(os.path.join('launch', '*.launch.py'))),
+        # #=============
         ('share/' + package_name, ['package.xml']),
     ],
     install_requires=['setuptools', 'ubicoders-vrobots'],
@@ -26,9 +26,7 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            "vr_main = ubi_vrobots_ros.vr_main:main",
-            "vr_ctrl_mr = ubi_vrobots_ros.vr_controller_mr:main",
-            "vr_bridge = ubi_vrobots_ros.vr_bridge:main",
+            'publisher = ubi_vrobots_ros.publisher:main',
         ],
     },
 )
