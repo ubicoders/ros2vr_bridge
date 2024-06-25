@@ -9,6 +9,7 @@ from .vr_msg_py.states_msg_helper import VRobotState
 from .vr_ws_srv import run_ws_server
 import threading
 from .vr_msg_py.R000_states_generated import StatesMsg, StatesMsgT
+from rclpy.callback_groups import ReentrantCallbackGroup
 
 def start_server(ros_pub_callback):
     asyncio.run(run_ws_server(ros_pub_callback))
@@ -19,7 +20,9 @@ class VRBridgePublisher(Node):
         self.publisher_dict = {}
         self.thread = threading.Thread(target=start_server, args=(self.ws_on_recv_callback,))
         self.thread.start()
-        self.timer_dummy = self.create_timer(10, self.dummy_callback)
+
+        self.cb_group = ReentrantCallbackGroup()
+        self.timer_dummy = self.create_timer(10, self.dummy_callback, self.cb_group)
 
     def dummy_callback(self):
         # self.get_logger().info('Dummy callback')
@@ -59,7 +62,8 @@ class VRobotCMDSubs(Node):
         self.subscriptions_dict = {}  # Renamed to avoid conflict
         self.vrobot_cmd_topics = []
         self.cmd_publisher_prefix = '/vrobot_cmd_pub'
-        self.timer = self.create_timer(0.02, self.check_new_cmd_publishers)
+        self.cb_group = ReentrantCallbackGroup()
+        self.timer = self.create_timer(0.02, self.check_new_cmd_publishers, self.cb_group)
 
     def check_new_cmd_publishers(self):
         topic_names_and_types = self.get_topic_names_and_types()
@@ -92,7 +96,7 @@ class VRobotCMDSubs(Node):
         #self.get_logger().info(f"Current VRobotCMD topics: {self.vrobot_cmd_topics}")
 
     def cmd_callback(self, msg):
-        self.get_logger().info(f'Received VRobotCMD message for system: {msg.sys_id}')
+        #self.get_logger().info(f'Received VRobotCMD message for system: {msg.sys_id}')
         #self.get_logger().info(f"Received sys_id: {msg.sys_id} cmd_id: {msg.cmd_id}, int_val: {msg.int_val}, float_val: {msg.float_val}")
         sysId, ba = pack_rosmsg_to_fb_ba(msg)
         CMDS_DICT[sysId] = {"msg": ba, "updated": True}
