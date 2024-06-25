@@ -22,16 +22,6 @@ async def register(websocket, ros_publisher_cb):
 
             # for cmd msgs
             await send_cmd_msg(websocket)
-            # keys = CMDS_DICT.keys()
-            # for key in keys:
-            #     pair = CMDS_DICT[key]
-            #     updated = pair["updated"]
-            #     ba = pair["msg"]
-            #     if (updated == True):
-            #         await websocket.send(ba)
-            #         CMDS_DICT[key]["updated"] = False
-            
-
             # for service msgs
             others = CONNECTIONS - {websocket}
             websockets.broadcast(others, message)
