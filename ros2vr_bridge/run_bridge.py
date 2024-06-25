@@ -92,7 +92,7 @@ class VRobotCMDSubs(Node):
         #self.get_logger().info(f"Current VRobotCMD topics: {self.vrobot_cmd_topics}")
 
     def cmd_callback(self, msg):
-        self.get_logger().info('Received VRobotCMD message')
+        self.get_logger().info(f'Received VRobotCMD message for system: {msg.sys_id}')
         #self.get_logger().info(f"Received sys_id: {msg.sys_id} cmd_id: {msg.cmd_id}, int_val: {msg.int_val}, float_val: {msg.float_val}")
         sysId, ba = pack_rosmsg_to_fb_ba(msg)
         CMDS_DICT[sysId] = {"msg": ba, "updated": True}
