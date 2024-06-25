@@ -2,19 +2,18 @@ import asyncio
 import rclpy
 from rclpy.executors import MultiThreadedExecutor
 from rclpy.node import Node
-from std_msgs.msg import Header
-from geometry_msgs.msg import Vector3, Quaternion
 from ubi_vrobots_interface.msg import VRobotStates, VRobotCMD
+from .ros2ws_utils import CMDS_DICT, pack_rosmsg_to_fb_ba
+from .ws2ros_utils import ros2msg_packer
 from .vr_msg_py.states_msg_helper import VRobotState
 from .vr_ws_srv import run_ws_server
 import threading
 from .vr_msg_py.R000_states_generated import StatesMsg, StatesMsgT
 
-
 def start_server(ros_pub_callback):
     asyncio.run(run_ws_server(ros_pub_callback))
 
-class VRobotPublisher(Node):
+class VRBridgePublisher(Node):
     def __init__(self):
         super().__init__('vrobot_publisher')
         self.publisher_dict = {}
@@ -23,7 +22,8 @@ class VRobotPublisher(Node):
         self.timer_dummy = self.create_timer(10, self.dummy_callback)
 
     def dummy_callback(self):
-        self.get_logger().info('Dummy callback')
+        # self.get_logger().info('Dummy callback')
+        pass
 
     def cread_publisher(self, sys_id):
         if sys_id in self.publisher_dict:
@@ -39,82 +39,68 @@ class VRobotPublisher(Node):
             if (StatesMsg.StatesMsgBufferHasIdentifier(msg, 0) is True):
                 statesMsgT = StatesMsgT.InitFromPackedBuf(msg, 0)
                 states = VRobotState(statesMsgT)
-                self._logger.info(f"Received message from websocket, sysId: {states.sysId}")
-                self._logger.info(f"Received message from websocket: {states.linPos}")
                 self.publish_states(states)
         except Exception as e:
             self._logger.error(f"Error while processing message from websocket: {e}")
         finally:
             pass
         
-    def publish_states(self, stateMsgT:StatesMsgT):
-        seconds = int(stateMsgT.timestamp/1000)
-        nanoseconds = int((stateMsgT.timestamp - seconds*1000)*1e6) 
-        msg = VRobotStates()
-        msg.header = Header()
-        msg.header.stamp.sec = seconds
-        msg.header.stamp.nanosec = nanoseconds
-        msg.header.frame_id = 'default'
-        msg.name = stateMsgT.name
-        msg.sys_id = stateMsgT.sysId
-        msg.lin_acc = Vector3(x=stateMsgT.linAcc.x, y=stateMsgT.linAcc.y, z=stateMsgT.linAcc.z)
-        msg.lin_vel = Vector3(x=stateMsgT.linVel.x, y=stateMsgT.linVel.y, z=stateMsgT.linVel.z)
-        msg.lin_pos = Vector3(x=stateMsgT.linPos.x, y=stateMsgT.linPos.y, z=stateMsgT.linPos.z)
-        msg.altitude = stateMsgT.altitude
-
-        msg.ang_acc = Vector3(x=stateMsgT.angAcc.x, y=stateMsgT.angAcc.y, z=stateMsgT.angAcc.z)
-        msg.ang_vel = Vector3(x=stateMsgT.angVel.x, y=stateMsgT.angVel.y, z=stateMsgT.angVel.z)
-        msg.euler = Vector3(x=stateMsgT.euler.x, y=stateMsgT.euler.y, z=stateMsgT.euler.z)
-        msg.euler_dot = Vector3(x=stateMsgT.eulerDot.x, y=stateMsgT.eulerDot.y, z=stateMsgT.eulerDot.z)
-        msg.quaternion = Quaternion(x=stateMsgT.quaternion.x, y=stateMsgT.quaternion.y, z=stateMsgT.quaternion.z, w=stateMsgT.quaternion.w)
-
-        msg.pwm = [ int( pwm) for pwm in stateMsgT.pwm ]
-        msg.actuators = [ act for act in stateMsgT.actuators ]
-        # msg.force = Vector3()
-        # msg.torque = Vector3()
-
-        # msg.accelerometer = Vector3()
-        # msg.gyroscope = Vector3()
-        # msg.magnetometer = Vector3()
-        # msg.barometer = 1013.25
-        # msg.temperature = 25.0
-        # msg.gps_pos = Vector3()
-        # msg.gps_vel = Vector3()
-
-        # msg.mass = 1.0
-        # msg.cg = Vector3()
-        # msg.moment_arms = [0.0]*3
-        # msg.moi_3x1 = Vector3()
-        # msg.moi_3x3 = [0.0]*9
-        # msg.extra_props = [0.0]*5
-
-        # msg.collisions = []  # Assuming you have a Collision message type defined
         
-
-        publisher = self.cread_publisher(stateMsgT.sysId)
+    def publish_states(self, _stateMsgT:StatesMsgT):
+        publisher = self.cread_publisher(_stateMsgT.sysId)
+        msg = ros2msg_packer(_stateMsgT)        
         publisher.publish(msg)
-        self.get_logger().info('Publishing VRobotStates message')
+        # self.get_logger().info('Publishing VRobotStates message')
 
 
 class VRobotCMDSubs(Node):
     def __init__(self):
         super().__init__('vrobot_cmd_subs')
-        self.subscription = self.create_subscription(
-            VRobotCMD,
-            'vrobot_cmd',
-            self.cmd_callback,
-            10)
+        self.subscriptions_dict = {}  # Renamed to avoid conflict
+        self.vrobot_cmd_topics = []
+        self.cmd_publisher_prefix = '/vrobot_cmd_pub'
+        self.timer = self.create_timer(0.02, self.check_new_cmd_publishers)
+
+    def check_new_cmd_publishers(self):
+        topic_names_and_types = self.get_topic_names_and_types()
+        new_vrobot_cmd_topics = [name for name, types in topic_names_and_types if 'ubi_vrobots_interface/msg/VRobotCMD' in types]
+        new_vrobot_cmd_topics = [name for name in new_vrobot_cmd_topics if name.startswith(self.cmd_publisher_prefix)]
+
+        # Find topics to add and remove
+        topics_to_add = set(new_vrobot_cmd_topics) - set(self.vrobot_cmd_topics)
+        topics_to_remove = set(self.vrobot_cmd_topics) - set(new_vrobot_cmd_topics)
+
+        # Add new subscribers
+        for topic in topics_to_add:
+            #self.get_logger().info(f"Subscribing to new topic: {topic}")
+            subscription = self.create_subscription(
+                VRobotCMD,
+                topic,
+                self.cmd_callback,
+                10
+            )
+            self.subscriptions_dict[topic] = subscription
+
+        # Remove old subscribers
+        for topic in topics_to_remove:
+            #self.get_logger().info(f"Unsubscribing from topic: {topic}")
+            self.destroy_subscription(self.subscriptions_dict[topic])
+            del self.subscriptions_dict[topic]
+
+        # Update the list of current topics
+        self.vrobot_cmd_topics = new_vrobot_cmd_topics
+        #self.get_logger().info(f"Current VRobotCMD topics: {self.vrobot_cmd_topics}")
 
     def cmd_callback(self, msg):
-        self.get_logger().info('Received VRobotCMD message')
-        # Process the received command message here
-        # Example: Print some values
-        self.get_logger().info(f"Received cmd_id: {msg.cmd_id}, int_val: {msg.int_val}, float_val: {msg.float_val}")
+        # self.get_logger().info('Received VRobotCMD message')
+        #self.get_logger().info(f"Received sys_id: {msg.sys_id} cmd_id: {msg.cmd_id}, int_val: {msg.int_val}, float_val: {msg.float_val}")
+        sysId, ba = pack_rosmsg_to_fb_ba(msg)
+        CMDS_DICT[sysId] = {"msg": ba, "updated": True}
 
 def main():
     rclpy.init()
 
-    node1 = VRobotPublisher()
+    node1 = VRBridgePublisher()
     node2 = VRobotCMDSubs()
     executor = MultiThreadedExecutor()
     executor.add_node(node1)

@@ -1,33 +1,41 @@
 import asyncio
 import websockets
+
+from .ros2ws_utils import CMDS_DICT, send_cmd_msg
 from .vr_msg_py.EMPT_empty_generated import EmptyMsg
 from .vr_msg_py.R000_states_generated import StatesMsg
 
 CONNECTIONS = set()
-CMDS_DICT = {}
 
 
 async def register(websocket, ros_publisher_cb):
     CONNECTIONS.add(websocket)
-    # print("new connection")
     try:
         async for message in websocket:
-            # print(f"message: {message}")
             if EmptyMsg.EmptyMsgBufferHasIdentifier(message, 0) is True:
                 continue
             if message == b"ping" or message == "ping":
                 await websocket.send(b"pong")
                 continue
-            # print(f"message: {message}")
-            # others = CONNECTIONS - {websocket}
             if (StatesMsg.StatesMsgBufferHasIdentifier(message, 0) is True):
                 ros_publisher_cb(message)
-            #websockets.broadcast(others, message)
-            # websocket.send("ack")
 
-
-
+            # for cmd msgs
+            await send_cmd_msg(websocket)
+            # keys = CMDS_DICT.keys()
+            # for key in keys:
+            #     pair = CMDS_DICT[key]
+            #     updated = pair["updated"]
+            #     ba = pair["msg"]
+            #     if (updated == True):
+            #         await websocket.send(ba)
+            #         CMDS_DICT[key]["updated"] = False
             
+
+            # for service msgs
+            others = CONNECTIONS - {websocket}
+            websockets.broadcast(others, message)
+
 
     except Exception as e:
         pass
