@@ -26,7 +26,7 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'publisher = ros2vr_bridge.publisher:main',
+            'run_bridge = ros2vr_bridge.run_bridge:main',
         ],
     },
 )
