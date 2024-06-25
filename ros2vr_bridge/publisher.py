@@ -2,7 +2,7 @@ import asyncio
 import rclpy
 from rclpy.executors import MultiThreadedExecutor
 from rclpy.node import Node
-from ubi_vrobots_interface.msg import VRobotStates, VRobotCMD
+from ros2vr_interface.msg import VRobotStates, VRobotCMD
 from .ros2ws_utils import CMDS_DICT, pack_rosmsg_to_fb_ba
 from .ws2ros_utils import ros2msg_packer
 from .vr_msg_py.states_msg_helper import VRobotState
@@ -63,7 +63,7 @@ class VRobotCMDSubs(Node):
 
     def check_new_cmd_publishers(self):
         topic_names_and_types = self.get_topic_names_and_types()
-        new_vrobot_cmd_topics = [name for name, types in topic_names_and_types if 'ubi_vrobots_interface/msg/VRobotCMD' in types]
+        new_vrobot_cmd_topics = [name for name, types in topic_names_and_types if 'ros2vr_interface/msg/VRobotCMD' in types]
         new_vrobot_cmd_topics = [name for name in new_vrobot_cmd_topics if name.startswith(self.cmd_publisher_prefix)]
 
         # Find topics to add and remove
@@ -92,7 +92,7 @@ class VRobotCMDSubs(Node):
         #self.get_logger().info(f"Current VRobotCMD topics: {self.vrobot_cmd_topics}")
 
     def cmd_callback(self, msg):
-        # self.get_logger().info('Received VRobotCMD message')
+        self.get_logger().info('Received VRobotCMD message')
         #self.get_logger().info(f"Received sys_id: {msg.sys_id} cmd_id: {msg.cmd_id}, int_val: {msg.int_val}, float_val: {msg.float_val}")
         sysId, ba = pack_rosmsg_to_fb_ba(msg)
         CMDS_DICT[sysId] = {"msg": ba, "updated": True}

@@ -1,6 +1,6 @@
 import flatbuffers
-from ubi_vrobots_interface.msg import VRobotCMD
-from ubi_vrobots_ros.vr_msg_py.C000_commands_generated import CommandMsgT, Vec3MsgT, Vec4MsgT
+from ros2vr_interface.msg import VRobotCMD
+from ros2vr_bridge.vr_msg_py.C000_commands_generated import CommandMsgT, Vec3MsgT, Vec4MsgT
 import time
 CMDS_DICT = {}
 

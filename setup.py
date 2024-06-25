@@ -4,7 +4,7 @@ import glob
 import os
 #=============
 
-package_name = 'ubi_vrobots_ros'
+package_name = 'ros2vr_bridge'
 
 setup(
     name=package_name,
@@ -26,7 +26,7 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'publisher = ubi_vrobots_ros.publisher:main',
+            'publisher = ros2vr_bridge.publisher:main',
         ],
     },
 )

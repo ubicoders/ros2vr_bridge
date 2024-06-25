@@ -5,7 +5,7 @@ from launch_ros.substitutions import FindPackageShare
 import os
 
 def generate_launch_description():
-    package_dir = FindPackageShare('ubi_vrobots_ros').find('ubi_vrobots_ros')
+    package_dir = FindPackageShare('ros2vr_bridge').find('ros2vr_bridge')
 
     # Path to your Python script relative to the package root
     # python_script_path = os.path.join(package_dir, 'vr_main.py')
@@ -16,14 +16,14 @@ def generate_launch_description():
         # ),
 
         Node(
-            package='ubi_vrobots_ros', 
+            package='ros2vr_bridge', 
             executable='vr_bridge', 
             name='vr_bridge',  
             output='screen',     
         ),
 
         Node(
-            package='ubi_vrobots_ros', 
+            package='ros2vr_bridge', 
             executable='vr_ctrl_mr', 
             name='vr_mr',  
             output='screen',             

@@ -2,7 +2,7 @@ from typing import List
 from geometry_msgs.msg import Vector3, Quaternion
 from .vr_msg_py.R000_states_generated import StatesMsg, StatesMsgT, Vec3MsgT, Vec4MsgT
 from .vr_msg_py.collision_generated import CollisionT
-from ubi_vrobots_interface.msg import VRobotStates, VRobotCMD, Collision
+from ros2vr_interface.msg import VRobotStates, VRobotCMD, Collision
 from std_msgs.msg import Header
 
 def create_vector4(vec4MsgT:Vec4MsgT):
