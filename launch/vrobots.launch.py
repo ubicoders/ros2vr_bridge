@@ -15,17 +15,17 @@ def generate_launch_description():
         #     shell=True
         # ),
 
-        Node(
-            package='ros2vr_bridge', 
-            executable='vr_bridge', 
-            name='vr_bridge',  
-            output='screen',     
-        ),
+        # Node(
+        #     package='ros2vr_bridge', 
+        #     executable='vr_bridge', 
+        #     name='vr_bridge',  
+        #     output='screen',     
+        # ),
 
-        Node(
-            package='ros2vr_bridge', 
-            executable='vr_ctrl_mr', 
-            name='vr_mr',  
-            output='screen',             
-        ),
+        # Node(
+        #     package='ros2vr_bridge', 
+        #     executable='vr_ctrl_mr', 
+        #     name='vr_mr',  
+        #     output='screen',             
+        # ),
     ])
